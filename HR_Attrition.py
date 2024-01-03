@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 with st.spinner('Fetching Latest ML Model'):
     # Create the model, including its weights and the optimizer
-    model = joblib.load("HRAttritionModel.joblib")
+    model = joblib.load("HRAttritionModel.pkl")
     time.sleep(1)
     st.success('Model Loaded!')
 
