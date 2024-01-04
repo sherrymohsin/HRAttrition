@@ -1,7 +1,12 @@
 import streamlit as st
 import pandas as pd
 import time
-import joblib
+from IPython.display import display
+from sklearn import tree
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
+#import joblib
+from sklearn.tree import DecisionTreeClassifier
 
 df_HR = pd.read_csv('HR_Attrition.csv')
     
@@ -93,15 +98,54 @@ df_sample['MonthlyIncome'] = input_MonthlyIncome
 df_sample['YearsWithCurrManager'] = input_YearsWithCurrManager
 df_sample['Department_Sales'] = Department
 
-def predict_churn(user_input):
-    y_pred= clf.predict(user_input)
-    churn='Churn not expected'
+def plot_decision_tree(model, feature_names, class_names):
+    # plot_tree function contains a list of all nodes and leaves of the Decision tree
+    tree = plot_tree(model, feature_names = feature_names, class_names = class_names,
+                     rounded = True, proportion = True, precision = 2, filled = False, fontsize=10)
     
+    # I return the tree for the next part
+    return tree
+    
+def plot_decision_path_tree(model, X, class_names=None):
+    fig = plt.figure(figsize=(10, 12))
+    class_names = model.classes_.astype(str) if type(class_names) == type(None) else class_names
+    feature_names = X.index if type(X) == type(pd.Series()) else X.columns
+    
+    # Getting the tree from the function programmed above
+    tree = plot_decision_tree(model, feature_names, class_names)
+    
+    # Get the decision path of the wanted prediction 
+    decision_path = model.decision_path(X)
+
+    # Now remember the tree object contains all nodes and leaves so the logic here
+    # is to loop into the tree and change visible attribute for components that 
+    # are not in the decision path    
+    
+               
+    for i in range(0,len(tree)):
+        if i not in decision_path.indices:
+            plt.setp(tree[i], color = 'grey')
+        else:
+            plt.setp(tree[i], color = 'green')    
+    
+    st.pyplot(plt)
+    
+
+
+def predict_churn(user_input, model, ):
+    y_pred= model.predict(user_input)
+    
+    churn='Churn not expected'    
     if y_pred[:1] == 1:
         churn='Churn expected'
         
-    st.write(churn)
-
+    st.write(churn)    
+    
+    #draw_tree
+    display(user_input)
+    plot_decision_path_tree(model, user_input, user_input.columns)   
+    #['OverTime','Age','MonthlyIncome','YearsWithCurrManager','Department_Sales']
+    
 if st.button("Predict churn"):
-    predict_churn(df_sample)
+    predict_churn(df_sample, clf)
     
